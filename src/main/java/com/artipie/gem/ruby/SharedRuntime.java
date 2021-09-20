@@ -2,12 +2,13 @@
  * The MIT License (MIT) Copyright (c) 2020-2021 artipie.com
  * https://github.com/artipie/artipie/LICENSE.txt
  */
-
 package com.artipie.gem.ruby;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.jruby.Ruby;
@@ -30,6 +31,11 @@ public final class SharedRuntime {
     private final Object lock;
 
     /**
+     * Loaded plugins by ID.
+     */
+    private final ConcurrentMap<String, Boolean> plugins;
+
+    /**
      * Runtime cache.
      */
     private volatile Ruby runtime;
@@ -50,6 +56,7 @@ public final class SharedRuntime {
     public SharedRuntime(final Supplier<Ruby> factory) {
         this.factory = factory;
         this.lock = new Object();
+        this.plugins = new ConcurrentHashMap<>();
     }
 
     /**
@@ -58,7 +65,7 @@ public final class SharedRuntime {
      * @param <T> Apply function result type
      * @return Future with result of the function
      */
-    public <T> CompletionStage<T> apply(final Function<Ruby, T> applier) {
+    public <T extends RubyPlugin> CompletionStage<T> apply(final Function<Ruby, T> applier) {
         return CompletableFuture.supplyAsync(
             () -> {
                 if (this.runtime == null) {
@@ -70,6 +77,34 @@ public final class SharedRuntime {
                 }
                 return applier.apply(this.runtime);
             }
+        ).thenApply(
+            plugin -> {
+                this.plugins.computeIfAbsent(
+                    plugin.identifier(), id -> {
+                        plugin.initialize();
+                        return Boolean.TRUE;
+                    }
+                );
+                return plugin;
+            }
         );
+    }
+
+    /**
+     * Ruby plugin. Could be loaded and initialized only once.
+     * @since 1.0
+     */
+    public interface RubyPlugin {
+
+        /**
+         * Plugin unique identifier.
+         * @return ID string
+         */
+        String identifier();
+
+        /**
+         * Initialize once.
+         */
+        void initialize();
     }
 }

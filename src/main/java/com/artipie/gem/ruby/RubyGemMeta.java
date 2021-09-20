@@ -2,21 +2,19 @@
  * The MIT License (MIT) Copyright (c) 2020-2021 artipie.com
  * https://github.com/artipie/artipie/LICENSE.txt
  */
-
 package com.artipie.gem.ruby;
 
 import com.artipie.gem.GemMeta;
 import java.nio.file.Path;
 import org.jruby.Ruby;
 import org.jruby.RubyObject;
-import org.jruby.RubyRuntimeAdapter;
 import org.jruby.javasupport.JavaEmbedUtils;
 
 /**
  * JRuby implementation of GemInfo metadata parser.
  * @since 1.0
  */
-public final class RubyGemMeta implements GemMeta {
+public final class RubyGemMeta implements GemMeta, SharedRuntime.RubyPlugin {
 
     /**
      * Ruby runtime.
@@ -33,14 +31,23 @@ public final class RubyGemMeta implements GemMeta {
 
     @Override
     public GemMeta.MetaInfo info(final Path gem) {
-        final RubyRuntimeAdapter adapter = JavaEmbedUtils.newRuntimeAdapter();
-        adapter.eval(this.ruby, "require 'rubygems/package.rb'");
-        final RubyObject spec = (RubyObject) adapter.eval(
+        final RubyObject spec = (RubyObject) JavaEmbedUtils.newRuntimeAdapter().eval(
             this.ruby, String.format(
                 "Gem::Package.new('%s').spec", gem.toString()
             )
         );
         return new RubyMetaInfo(spec);
+    }
+
+    @Override
+    public String identifier() {
+        return this.getClass().getCanonicalName();
+    }
+
+    @Override
+    public void initialize() {
+        JavaEmbedUtils.newRuntimeAdapter()
+            .eval(this.ruby, "require 'rubygems/package.rb'");
     }
 
     /**
