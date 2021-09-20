@@ -7,10 +7,12 @@ package com.artipie.gem.http;
 import com.artipie.asto.Storage;
 import com.artipie.gem.Gem;
 import com.artipie.gem.JsonMetaFormat;
+import com.artipie.http.ArtipieHttpException;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.async.AsyncResponse;
 import com.artipie.http.rq.RequestLineFrom;
+import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.common.RsJson;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -58,7 +60,9 @@ public final class ApiGetSlice implements Slice {
         final Publisher<ByteBuffer> body) {
         final Matcher matcher = PATH_PATTERN.matcher(new RequestLineFrom(line).uri().toString());
         if (!matcher.find()) {
-            throw new IllegalStateException("Invalid routing schema");
+            throw new ArtipieHttpException(
+                RsStatus.BAD_REQUEST, String.format("Invalid URI: `%s`", matcher.toString())
+            );
         }
         return new AsyncResponse(
             this.sdk.info(matcher.group(1)).thenApply(

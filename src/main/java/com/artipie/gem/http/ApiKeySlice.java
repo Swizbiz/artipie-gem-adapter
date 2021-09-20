@@ -50,22 +50,16 @@ public final class ApiKeySlice implements Slice {
                 .authenticate(headers)
                 .thenApply(AuthScheme.Result::user)
                 .thenApply(
-                    usr -> {
-                        final Response response;
-                        if (usr.isPresent()) {
-                            final String key = new RqHeaders(headers, Authorization.NAME).stream()
-                                .findFirst()
-                                .filter(hdr -> hdr.startsWith(BasicAuthScheme.NAME))
-                                .map(hdr -> hdr.substring(BasicAuthScheme.NAME.length() + 1))
-                                .get();
-                            response = new RsWithBody(key, StandardCharsets.UTF_8);
-                        } else {
-                            response = new RsWithStatus(RsStatus.UNAUTHORIZED);
-                        }
-                        return response;
-                    }
+                    opt -> opt.flatMap(
+                        user -> new RqHeaders(headers, Authorization.NAME).stream()
+                            .filter(val -> val.startsWith(BasicAuthScheme.NAME))
+                            .map(val -> val.substring(BasicAuthScheme.NAME.length() + 1))
+                            .findFirst()
+                    )
+                ).thenApply(
+                    key -> key.<Response>map(val -> new RsWithBody(val, StandardCharsets.US_ASCII))
+                        .orElseGet(() -> new RsWithStatus(RsStatus.UNAUTHORIZED))
                 )
         );
     }
-
 }
