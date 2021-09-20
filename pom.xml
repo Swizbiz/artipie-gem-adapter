@@ -32,29 +32,18 @@ SOFTWARE.
   <artifactId>gem-adapter</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>gem-adapter</name>
-  <description>An Artipie adapter for gem packages</description>
+  <description>An Artipie adapter for Ruby Gem packages</description>
   <url>https://github.com/artipie/gem-adapter</url>
   <inceptionYear>2020</inceptionYear>
   <licenses>
     <license>
       <name>MIT</name>
-      <url>https://github.com/artipie/rpm-adapter/blob/master/LICENSE.txt</url>
+      <url>https://github.com/artipie/gem-adapter/blob/master/LICENSE.txt</url>
     </license>
   </licenses>
-  <developers>
-    <developer>
-      <id>1</id>
-      <name>Pavel Drankou</name>
-      <email>titantins@gmail.com</email>
-      <organization>artipie</organization>
-      <organizationUrl>https://github.com/artipie</organizationUrl>
-      <roles>
-        <role>Architect</role>
-        <role>Developer</role>
-      </roles>
-      <timezone>+3</timezone>
-    </developer>
-  </developers>
+  <properties>
+    <qulice.license>${project.basedir}/LICENSE.header</qulice.license>
+  </properties>
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/artipie/gem-adapter/issues</url>
@@ -65,13 +54,13 @@ SOFTWARE.
     <url>https://github.com/artipie/gem-adapter</url>
   </scm>
   <ciManagement>
-    <system>rultor</system>
-    <url>https://www.rultor.com/s/rpm-adapter</url>
+    <system>GitHub actions</system>
+    <url>https://github.com/artipie/gem-adapter/actions</url>
   </ciManagement>
   <distributionManagement>
     <site>
-      <id>github-pages</id>
-      <url>https://github.com/artipie/gem-adapter</url>
+      <id>Maven central</id>
+      <url>https://repo.maven.apache.org/maven2/com/artipie/gem-adapter/</url>
     </site>
   </distributionManagement>
   <dependencies>
