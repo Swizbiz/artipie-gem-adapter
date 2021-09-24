@@ -54,7 +54,7 @@ public final class RubyGemIndex implements GemIndex, SharedRuntime.RubyPlugin {
         final String script;
         try {
             script = IOUtils.toString(
-                RubyGemIndex.class.getResourceAsStream(String.format("/metarunner.rb")),
+                RubyGemIndex.class.getResourceAsStream("/metarunner.rb"),
                 StandardCharsets.UTF_8
             );
         } catch (final IOException err) {
