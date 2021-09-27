@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -77,41 +76,28 @@ public final class Gem {
      * @return Completable action
      */
     public CompletionStage<Void> update(final Key gem) {
-        final AtomicReference<Path> dir = new AtomicReference<>();
         return newTempDir().thenCompose(
-            tmp -> {
-                dir.set(tmp);
-                return new Copy(this.storage, key -> META_NAMES.contains(key) || key.equals(gem))
-                .copy(new FileStorage(tmp))
-                .thenApply(ignore -> tmp);
-            }
-        ).thenCompose(
-            tmp -> this.shared.apply(RubyGemMeta::new)
-                .thenApply(
-                    meta -> {
-                        final RevisionFormat fmt = new RevisionFormat();
-                        meta.info(Paths.get(tmp.toString(), gem.string())).print(fmt);
-                        return fmt.toString();
-                    }
-                ).thenApply(
-                    new UncheckedIOFunc<>(
-                        name -> {
-                            final Path path = Paths.get(tmp.toString(), gem.string());
-                            final Path target = path.getParent().resolve(name);
-                            Files.move(path, target);
-                            return target;
-                        }
+            tmp -> new Copy(
+                this.storage, key -> META_NAMES.contains(key) || key.equals(gem)
+            ).copy(new FileStorage(tmp)).thenCompose(
+                ignore -> this.shared.apply(RubyGemMeta::new)
+                    .thenApply(meta -> meta.info(tmp.resolve(gem.string())))
+                    .thenApply(info -> info.toString(new RevisionFormat()))
+            ).thenApplyAsync(
+                new UncheckedIOFunc<>(
+                    name -> Files.move(
+                        tmp.resolve(gem.string()),
+                        gem.parent().map(key -> tmp.resolve(key.string()))
+                            .orElse(tmp).resolve(name)
                     )
                 )
-        ).thenCompose(
-            fullpath -> this.shared.apply(RubyGemIndex::new)
-                .thenAccept(index -> index.update(fullpath))
-                .thenCompose(
-                    none -> new Copy(
-                        new FileStorage(dir.get())
-                    ).copy(this.storage)
+            ).thenCompose(
+                path -> this.shared.apply(RubyGemIndex::new).thenAcceptAsync(
+                    index -> index.update(path)
                 )
-                .handle(removeTempDir(dir.get()))
+            ).thenCompose(
+                ignore -> new Copy(new FileStorage(tmp)).copy(this.storage)
+            ).handle(removeTempDir(tmp))
         );
     }
 
