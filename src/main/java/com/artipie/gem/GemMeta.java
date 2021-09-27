@@ -50,5 +50,15 @@ public interface GemMeta {
          * @param fmt Meta format
          */
         void print(MetaFormat fmt);
+
+        /**
+         * Print info to string using format provided.
+         * @param fmt Format of printing
+         * @return String
+         */
+        default String toString(final MetaFormat fmt) {
+            this.print(fmt);
+            return fmt.toString();
+        }
     }
 }
