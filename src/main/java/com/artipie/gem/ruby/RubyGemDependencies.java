@@ -37,7 +37,7 @@ public final class RubyGemDependencies implements GemDependencies, RubyPlugin {
     }
 
     @Override
-    public ByteBuffer dependencies(final Set<Path> gems) {
+    public ByteBuffer dependencies(final Set<? extends Path> gems) {
         final String raw = (String) JavaEmbedUtils.invokeMethod(
             this.ruby,
             JavaEmbedUtils.newRuntimeAdapter().eval(this.ruby, "Dependencies"),

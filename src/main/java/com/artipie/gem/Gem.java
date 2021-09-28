@@ -11,11 +11,13 @@ import com.artipie.asto.Storage;
 import com.artipie.asto.fs.FileStorage;
 import com.artipie.asto.misc.UncheckedIOFunc;
 import com.artipie.gem.GemMeta.MetaInfo;
+import com.artipie.gem.ruby.RubyGemDependencies;
 import com.artipie.gem.ruby.RubyGemIndex;
 import com.artipie.gem.ruby.RubyGemMeta;
 import com.artipie.gem.ruby.SharedRuntime;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -121,6 +123,28 @@ public final class Gem {
                             .orElseThrow(() -> new ArtipieIOException("gem not found"))
                     )
                 ).handle(removeTempDir(tmp))
+        );
+    }
+
+    /**
+     * Retreive and merge dependencies for gems specified.
+     * @param gems Set of gem names
+     * @return Dependencies binary data
+     */
+    public CompletionStage<ByteBuffer> dependencies(final Set<? extends String> gems) {
+        final Set<? extends String> names = gems.stream()
+            .map(name -> String.format("gems/%s.gem", name))
+            .collect(Collectors.toSet());
+        return newTempDir().thenCompose(
+            tmp -> new Copy(
+                this.storage, key -> names.contains(key.string())
+            ).copy(new FileStorage(tmp)).thenCompose(
+                ignore -> this.shared.apply(RubyGemDependencies::new).thenApply(
+                    deps -> deps.dependencies(
+                        names.stream().map(name -> tmp.resolve(name)).collect(Collectors.toSet())
+                    )
+                )
+            ).handle(removeTempDir(tmp))
         );
     }
 

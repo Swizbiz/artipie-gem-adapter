@@ -22,5 +22,5 @@ public interface GemDependencies {
      * @param gems Set of gem paths
      * @return Binary dependencies data
      */
-    ByteBuffer dependencies(Set<Path> gems);
+    ByteBuffer dependencies(Set<? extends Path> gems);
 }

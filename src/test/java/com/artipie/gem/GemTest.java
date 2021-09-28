@@ -6,11 +6,15 @@ package com.artipie.gem;
 
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
+import com.artipie.asto.SubStorage;
 import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
 import com.artipie.asto.test.TestResource;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -20,10 +24,11 @@ import org.junit.jupiter.api.Test;
  *
  * @since 1.0
  */
-public class GemTest {
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+final class GemTest {
 
     @Test
-    public void updateRepoIndex() throws Exception {
+    void updateRepoIndex() throws Exception {
         final Storage repo = new InMemoryStorage();
         final Key target = new Key.From("gems", UUID.randomUUID().toString());
         new TestResource("builder-3.2.4.gem").saveTo(repo, target);
@@ -43,6 +48,20 @@ public class GemTest {
                 "quick/Marshal.4.8/builder-3.2.4.gemspec.rz",
                 "gems/builder-3.2.4.gem"
             )
+        );
+    }
+
+    @Test
+    void parseGemDependencies() throws Exception {
+        final Storage repo = new InMemoryStorage();
+        Stream.of("builder-3.2.4.gem", "file-tail-1.2.0.gem")
+            .map(TestResource::new)
+            .forEach(tr -> tr.saveTo(new SubStorage(new Key.From("gems"), repo)));
+        MatcherAssert.assertThat(
+            new Gem(repo).dependencies(
+                new HashSet<>(Arrays.asList("builder-3.2.4", "file-tail-1.2.0"))
+            ).toCompletableFuture().join().limit(),
+            Matchers.greaterThan(0)
         );
     }
 }
