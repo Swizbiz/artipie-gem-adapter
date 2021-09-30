@@ -7,9 +7,12 @@ package com.artipie.gem;
 import com.artipie.asto.fs.FileStorage;
 import com.artipie.asto.test.TestResource;
 import com.artipie.gem.http.GemSlice;
+import com.artipie.http.slice.LoggingSlice;
 import com.artipie.vertx.VertxSliceServer;
 import io.vertx.reactivex.core.Vertx;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -18,6 +21,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,7 +37,7 @@ import org.testcontainers.images.builder.Transferable;
  * @checkstyle StringLiteralsConcatenationCheck (500 lines)
  * @checkstyle ExecutableStatementCountCheck (500 lines)
  */
-@SuppressWarnings("PMD.SystemPrintln")
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 @DisabledIfSystemProperty(named = "os.name", matches = "Windows.*")
 final class GemCliITCase {
 
@@ -61,11 +65,13 @@ final class GemCliITCase {
     void setUp(@TempDir final Path temp) throws Exception {
         this.vertx = Vertx.vertx();
         this.server = new VertxSliceServer(
-            this.vertx, new GemSlice(new FileStorage(temp))
+            this.vertx,
+            new LoggingSlice(
+                new GemSlice(new FileStorage(temp))
+            )
         );
         final int port = this.server.start();
         this.base = String.format("http://host.testcontainers.internal:%d", port);
-        System.out.printf("Started artipie gem server: %s\n", this.base);
         this.container = new RubyContainer()
             .withWorkingDirectory("/w")
             .withCommand("tail", "-f", "/dev/null");
@@ -129,21 +135,80 @@ final class GemCliITCase {
         }
     }
 
+    @Test
+    @Disabled
+    void gemBundleInstall() throws Exception {
+        final Set<String> gems = new HashSet<>(
+            Arrays.asList(
+                "builder-3.2.4.gem", "rails-6.0.2.2.gem",
+                "file-tail-1.2.0.gem"
+            )
+        );
+        gems.forEach(
+            name -> this.container.copyFileToContainer(
+                Transferable.of(new TestResource(name).asBytes()),
+                String.format("/w/%s", name)
+            )
+        );
+        gems.forEach(
+            gem -> bash(
+                this.container,
+                String.format(
+                    "env GEM_HOST_API_KEY='dXNyOnB3ZA==' gem push %s --host %s",
+                    gem, this.base
+                )
+            )
+        );
+        gems.forEach(
+            gem -> bash(
+                this.container,
+                String.format("rm /w/%s", gem)
+            )
+        );
+        this.container.copyFileToContainer(
+            Transferable.of(
+                new String(
+                    new TestResource("deps-Gemfile.template").asBytes(),
+                    StandardCharsets.UTF_8
+                ).replaceAll("\\$\\{HOST\\}", this.base).getBytes(StandardCharsets.UTF_8)
+            ),
+            "/w/Gemfile"
+        );
+        MatcherAssert.assertThat(
+            bash(
+                this.container,
+                String.join(
+                    ";",
+                    String.format("gem sources -a %s", this.base),
+                    "bundle install"
+                )
+            ),
+            Matchers.equalTo(0)
+        );
+    }
+
     /**
      * Executes a bash command in a ruby container.
      * @param ruby The ruby container.
      * @param command Bash command to execute.
      * @return Exit code.
-     * @throws IOException If fails.
-     * @throws InterruptedException If fails.
+     * @checkstyle ReturnCountCheck (20 lines) - return -1 on interrupt
      */
-    private static int bash(final RubyContainer ruby, final String command)
-        throws IOException, InterruptedException {
-        final Container.ExecResult exec = ruby.execInContainer(
-            "/bin/bash",
-            "-c",
-            command
-        );
+    @SuppressWarnings("PMD.OnlyOneReturn")
+    private static int bash(final RubyContainer ruby, final String command) {
+        final Container.ExecResult exec;
+        try {
+            exec = ruby.execInContainer(
+                "/bin/bash",
+                "-c",
+                command
+            );
+        } catch (final InterruptedException iex) {
+            Thread.currentThread().interrupt();
+            return -1;
+        } catch (final IOException err) {
+            throw new UncheckedIOException("Bash command failed in container", err);
+        }
         if (!exec.getStderr().equals("")) {
             throw new IllegalStateException(exec.getStderr());
         }
