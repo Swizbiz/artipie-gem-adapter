@@ -59,7 +59,7 @@ final class GemTest {
             .forEach(tr -> tr.saveTo(new SubStorage(new Key.From("gems"), repo)));
         MatcherAssert.assertThat(
             new Gem(repo).dependencies(
-                new HashSet<>(Arrays.asList("builder-3.2.4", "file-tail-1.2.0"))
+                new HashSet<>(Arrays.asList("builder", "file-tail"))
             ).toCompletableFuture().join().limit(),
             Matchers.greaterThan(0)
         );

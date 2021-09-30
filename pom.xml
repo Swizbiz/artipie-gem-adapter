@@ -156,6 +156,18 @@ SOFTWARE.
       <groupId>wtf.g4s8</groupId>
       <artifactId>matchers-json</artifactId>
       <version>1.0.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit-platform.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>wtf.g4s8</groupId>
+      <artifactId>tuples</artifactId>
+      <version>0.1.2</version>
     </dependency>
   </dependencies>
   <build>

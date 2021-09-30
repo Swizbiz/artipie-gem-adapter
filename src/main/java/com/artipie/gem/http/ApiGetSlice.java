@@ -33,7 +33,7 @@ import org.reactivestreams.Publisher;
  *
  * @since 0.2
  */
-public final class ApiGetSlice implements Slice {
+final class ApiGetSlice implements Slice {
 
     /**
      * Endpoint path pattern.
@@ -50,7 +50,7 @@ public final class ApiGetSlice implements Slice {
      * New slice for handling Get API requests.
      * @param storage Gems storage
      */
-    public ApiGetSlice(final Storage storage) {
+    ApiGetSlice(final Storage storage) {
         this.sdk = new Gem(storage);
     }
 

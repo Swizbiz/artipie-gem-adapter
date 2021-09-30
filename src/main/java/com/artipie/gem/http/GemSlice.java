@@ -60,7 +60,7 @@ public final class GemSlice extends Slice.Wrap {
             new SliceRoute(
                 new RtRulePath(
                     new RtRule.All(
-                        new ByMethodsRule(RqMethod.POST),
+                        ByMethodsRule.Standard.POST,
                         new RtRule.ByPath("/api/v1/gems")
                     ),
                     new AuthSlice(
@@ -74,11 +74,11 @@ public final class GemSlice extends Slice.Wrap {
                         ByMethodsRule.Standard.GET,
                         new RtRule.ByPath("/api/v1/dependencies")
                     ),
-                    new SliceSimple(new RsWithStatus(RsStatus.NOT_IMPLEMENTED))
+                    new DepsGemSlice(storage)
                 ),
                 new RtRulePath(
                     new RtRule.All(
-                        new ByMethodsRule(RqMethod.GET),
+                        ByMethodsRule.Standard.GET,
                         new RtRule.ByPath("/api/v1/api_key")
                     ),
                     new ApiKeySlice(auth)
