@@ -5,27 +5,26 @@
 package com.artipie.gem;
 
 import com.artipie.asto.fs.FileStorage;
+import com.artipie.asto.test.TestResource;
 import com.artipie.gem.http.GemSlice;
 import com.artipie.vertx.VertxSliceServer;
-import com.jcabi.log.Logger;
 import io.vertx.reactivex.core.Vertx;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.io.IOUtils;
-import org.cactoos.text.Base64Encoded;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.builder.Transferable;
 
 /**
  * A test which ensures {@code gem} console tool compatibility with the adapter.
@@ -36,70 +35,98 @@ import org.testcontainers.containers.GenericContainer;
  */
 @SuppressWarnings("PMD.SystemPrintln")
 @DisabledIfSystemProperty(named = "os.name", matches = "Windows.*")
-public class GemCliITCase {
+final class GemCliITCase {
+
+    /**
+     * Ruby Docker container.
+     */
+    private RubyContainer container;
+
+    /**
+     * Vertx instance for Artipie server.
+     */
+    private Vertx vertx;
+
+    /**
+     * Artipie server.
+     */
+    private VertxSliceServer server;
+
+    /**
+     * Base URL.
+     */
+    private String base;
+
+    @BeforeEach
+    void setUp(@TempDir final Path temp) throws Exception {
+        this.vertx = Vertx.vertx();
+        this.server = new VertxSliceServer(
+            this.vertx, new GemSlice(new FileStorage(temp))
+        );
+        final int port = this.server.start();
+        this.base = String.format("http://host.testcontainers.internal:%d", port);
+        System.out.printf("Started artipie gem server: %s\n", this.base);
+        this.container = new RubyContainer()
+            .withWorkingDirectory("/w")
+            .withCommand("tail", "-f", "/dev/null");
+        Testcontainers.exposeHostPorts(port);
+        this.container.start();
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (this.server != null) {
+            this.server.close();
+        }
+        if (this.vertx != null) {
+            this.vertx.close();
+        }
+        if (this.container != null) {
+            this.container.close();
+        }
+    }
 
     @Test
-    public void gemPushAndInstallWorks(@TempDir final Path temp, @TempDir final Path mount)
+    void gemPushAndInstallWorks()
         throws IOException, InterruptedException {
-        final String key = new Base64Encoded("usr:pwd").asString();
-        final Vertx vertx = Vertx.vertx();
-        final VertxSliceServer server = new VertxSliceServer(
-            vertx,
-            new GemSlice(new FileStorage(temp))
+        final Set<String> gems = new HashSet<>(
+            Arrays.asList(
+                "builder-3.2.4.gem", "rails-6.0.2.2.gem",
+                "file-tail-1.2.0.gem"
+            )
         );
-        final int port = server.start();
-        final String host = String.format("http://host.testcontainers.internal:%d", port);
-        Testcontainers.exposeHostPorts(port);
-        final RubyContainer ruby = new RubyContainer()
-            .withCommand("tail", "-f", "/dev/null")
-            .withWorkingDirectory("/home/")
-            .withFileSystemBind(mount.toAbsolutePath().toString(), "/home");
-        ruby.start();
-        final Set<String> gems = new HashSet<>();
-        gems.add("builder-3.2.4.gem");
-        gems.add("rails-6.0.2.2.gem");
-        gems.add("file-tail-1.2.0.gem");
-        for (final String gem : gems) {
-            final Path target = mount.resolve(gem);
-            try (InputStream is = this.getClass().getResourceAsStream("/".concat(gem));
-                OutputStream os = Files.newOutputStream(target)) {
-                IOUtils.copy(is, os);
-            }
-            MatcherAssert.assertThat(
-                String.format("'gem push %s failed with non-zero code", host, gem),
-                this.bash(
-                    ruby,
-                    String.format("GEM_HOST_API_KEY=%s gem push %s --host %s", key, gem, host)
-                ),
-                Matchers.equalTo(0)
-            );
-            Files.delete(target);
-        }
+        gems.stream().forEach(
+            name -> this.container.copyFileToContainer(
+                Transferable.of(new TestResource(name).asBytes()),
+                String.format("/w/%s", name)
+            )
+        );
         for (final String gem : gems) {
             MatcherAssert.assertThat(
-                String.format("'gem fetch %s failed with non-zero code", host, gem),
-                this.bash(
-                    ruby,
+                String.format("'gem `%s` push to %s failed with non-zero code", gem, this.base),
+                bash(
+                    this.container,
                     String.format(
-                        "GEM_HOST_API_KEY=%s gem fetch -V %s --source %s",
-                        key, gem.substring(0, gem.lastIndexOf('-')), host
+                        "env GEM_HOST_API_KEY='dXNyOnB3ZA==' gem push %s --host %s",
+                        gem, this.base
                     )
                 ),
                 Matchers.equalTo(0)
             );
         }
-        MatcherAssert.assertThat(
-            String.format("Unable to remove https://rubygems.org from the list of sources", host),
-            this.bash(
-                ruby,
-                String.format("gem sources -r https://rubygems.org/", host)
-            ),
-            Matchers.equalTo(0)
-        );
-        ruby.stop();
-        ruby.close();
-        server.close();
-        vertx.close();
+        for (final String gem : gems) {
+            MatcherAssert.assertThat(
+                String.format("'gem `%s` fetch from %s failed with non-zero code", gem, this.base),
+                bash(
+                    this.container,
+                    String.format(
+                        "GEM_HOST_API_KEY='dXNyOnB3ZA==' gem fetch -V %s --source %s",
+                        gem.substring(0, gem.lastIndexOf('-')), this.base
+                    )
+                ),
+                Matchers.equalTo(0)
+            );
+        }
     }
 
     /**
@@ -110,15 +137,13 @@ public class GemCliITCase {
      * @throws IOException If fails.
      * @throws InterruptedException If fails.
      */
-    private int bash(final RubyContainer ruby, final String command)
+    private static int bash(final RubyContainer ruby, final String command)
         throws IOException, InterruptedException {
         final Container.ExecResult exec = ruby.execInContainer(
             "/bin/bash",
             "-c",
             command
         );
-        Logger.info(GemCliITCase.class, exec.getStdout());
-        Logger.error(GemCliITCase.class, exec.getStderr());
         if (!exec.getStderr().equals("")) {
             throw new IllegalStateException(exec.getStderr());
         }

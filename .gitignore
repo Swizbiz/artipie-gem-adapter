@@ -7,3 +7,4 @@ lib/.classpath
 .settings/**
 .classpath
 lib/*
+.vscode/**
