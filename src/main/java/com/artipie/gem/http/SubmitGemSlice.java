@@ -22,7 +22,7 @@ import org.reactivestreams.Publisher;
  * A slice, which servers gem packages.
  * @since 1.0
  */
-public final class SubmitGemSlice implements Slice {
+final class SubmitGemSlice implements Slice {
 
     /**
      * Repository storage.
@@ -39,7 +39,7 @@ public final class SubmitGemSlice implements Slice {
      *
      * @param storage The storage.
      */
-    public SubmitGemSlice(final Storage storage) {
+    SubmitGemSlice(final Storage storage) {
         this.storage = storage;
         this.gem = new Gem(storage);
     }

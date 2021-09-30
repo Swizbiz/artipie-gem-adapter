@@ -27,10 +27,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import wtf.g4s8.tuples.Pair;
 
 /**
  * An SDK, which servers gem packages.
@@ -110,7 +110,7 @@ public final class Gem {
      */
     public CompletionStage<GemMeta.MetaInfo> info(final String gem) {
         return newTempDir().thenCompose(
-            tmp -> new Copy(this.storage, new IsGemKey(gem))
+            tmp -> new Copy(this.storage, new GemKeyPredicate(gem))
                 .copy(new FileStorage(tmp))
                 .thenApply(ignore -> tmp)
         ).thenCompose(
@@ -132,17 +132,18 @@ public final class Gem {
      * @return Dependencies binary data
      */
     public CompletionStage<ByteBuffer> dependencies(final Set<? extends String> gems) {
-        final Set<? extends String> names = gems.stream()
-            .map(name -> String.format("gems/%s.gem", name))
-            .collect(Collectors.toSet());
         return newTempDir().thenCompose(
             tmp -> new Copy(
-                this.storage, key -> names.contains(key.string())
+                this.storage, new GemKeyPredicate(gems)
             ).copy(new FileStorage(tmp)).thenCompose(
-                ignore -> this.shared.apply(RubyGemDependencies::new).thenApply(
-                    deps -> deps.dependencies(
-                        names.stream().map(name -> tmp.resolve(name)).collect(Collectors.toSet())
-                    )
+                ignore -> this.shared.apply(RubyGemDependencies::new).thenCompose(
+                    deps -> new FileStorage(tmp).list(Key.ROOT).thenApply(
+                        keys -> keys.stream()
+                            .map(key -> tmp.resolve(key.string()))
+                            .collect(Collectors.toSet())
+                    ).thenApply(paths -> Pair.of(deps, paths))
+                ).thenApply(
+                    tuple -> tuple.apply((deps, paths) -> deps.dependencies(paths))
                 )
             ).handle(removeTempDir(tmp))
         );
@@ -181,40 +182,6 @@ public final class Gem {
             }
             return res;
         };
-    }
-
-    /**
-     * Predicate to find gem key by name.
-     * @since 1.0
-     */
-    private static final class IsGemKey implements Predicate<Key>  {
-
-        /**
-         * Gem name.
-         */
-        private final String name;
-
-        /**
-         * New predicate.
-         * @param name Gem name
-         */
-        IsGemKey(final String name) {
-            this.name = name;
-        }
-
-        @Override
-        public boolean test(final Key key) {
-            final String str = key.string();
-            final int idx = str.lastIndexOf(this.name);
-            boolean matches = false;
-            if (idx >= 0) {
-                final String tail = str.substring(idx + this.name.length());
-                if (tail.isEmpty() || tail.matches("^[0-9a-zA-Z\\-\\.]+$")) {
-                    matches = true;
-                }
-            }
-            return matches;
-        }
     }
 
     /**

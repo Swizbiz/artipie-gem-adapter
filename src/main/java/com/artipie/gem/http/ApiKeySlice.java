@@ -25,7 +25,7 @@ import org.reactivestreams.Publisher;
  *
  * @since 0.3
  */
-public final class ApiKeySlice implements Slice {
+final class ApiKeySlice implements Slice {
 
     /**
      * The users.
@@ -36,7 +36,7 @@ public final class ApiKeySlice implements Slice {
      * The Ctor.
      * @param auth Auth.
      */
-    public ApiKeySlice(final Authentication auth) {
+    ApiKeySlice(final Authentication auth) {
         this.auth = auth;
     }
 
