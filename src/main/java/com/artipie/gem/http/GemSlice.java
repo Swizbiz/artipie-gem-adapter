@@ -71,6 +71,13 @@ public final class GemSlice extends Slice.Wrap {
                 ),
                 new RtRulePath(
                     new RtRule.All(
+                        ByMethodsRule.Standard.GET,
+                        new RtRule.ByPath("/api/v1/dependencies")
+                    ),
+                    new SliceSimple(new RsWithStatus(RsStatus.NOT_IMPLEMENTED))
+                ),
+                new RtRulePath(
+                    new RtRule.All(
                         new ByMethodsRule(RqMethod.GET),
                         new RtRule.ByPath("/api/v1/api_key")
                     ),
