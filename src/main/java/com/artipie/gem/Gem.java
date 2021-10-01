@@ -216,6 +216,11 @@ public final class Gem {
         }
 
         @Override
+        public void print(final String nme, final String[] values) {
+            // do nothing
+        }
+
+        @Override
         public String toString() {
             return String.format("%s-%s.gem", this.name, this.version);
         }
