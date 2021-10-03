@@ -38,6 +38,14 @@ public interface GemMeta {
          * @param value Node
          */
         void print(String name, MetaInfo value);
+
+        /**
+         * Print array of strings.
+         * @param name Key
+         * @param values Array
+         */
+        @SuppressWarnings("PMD.UseVarargs")
+        void print(String name, String[] values);
     }
 
     /**

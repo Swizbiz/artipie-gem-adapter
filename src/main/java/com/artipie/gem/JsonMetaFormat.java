@@ -7,6 +7,7 @@ package com.artipie.gem;
 import com.artipie.gem.GemMeta.MetaFormat;
 import com.artipie.gem.GemMeta.MetaInfo;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -41,5 +42,14 @@ public final class JsonMetaFormat implements MetaFormat {
         final JsonObjectBuilder child = Json.createObjectBuilder();
         value.print(new JsonMetaFormat(child));
         this.builder.add(name, child);
+    }
+
+    @Override
+    public void print(final String name, final String[] values) {
+        final JsonArrayBuilder arb = Json.createArrayBuilder();
+        for (final String item : values) {
+            arb.add(item);
+        }
+        this.builder.add(name, arb);
     }
 }
