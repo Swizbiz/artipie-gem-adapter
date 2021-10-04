@@ -13,9 +13,6 @@ import javax.json.JsonObjectBuilder;
 /**
  * New JSON format for Gem meta info.
  * @since 1.0
- * @todo #122:30min Add tests for this class.
- *  Check if it can add plain string values to JSON,
- *  and check it can support nested tree structures formatting.
  */
 public final class JsonMetaFormat implements MetaFormat {
 
