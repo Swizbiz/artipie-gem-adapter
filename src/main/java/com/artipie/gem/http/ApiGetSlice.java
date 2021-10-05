@@ -6,20 +6,16 @@ package com.artipie.gem.http;
 
 import com.artipie.asto.Storage;
 import com.artipie.gem.Gem;
-import com.artipie.gem.JsonMetaFormat;
 import com.artipie.http.ArtipieHttpException;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.async.AsyncResponse;
 import com.artipie.http.rq.RequestLineFrom;
 import com.artipie.http.rs.RsStatus;
-import com.artipie.http.rs.common.RsJson;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import org.reactivestreams.Publisher;
 
 /**
@@ -39,7 +35,7 @@ final class ApiGetSlice implements Slice {
      * Endpoint path pattern.
      */
     public static final Pattern PATH_PATTERN = Pattern
-        .compile("/api/v1/gems/([\\w\\d-]+).(json|yml)");
+        .compile("/api/v1/gems/(?<name>[\\w\\d-]+).(?<fmt>json|yaml)");
 
     /**
      * Gem SDK.
@@ -65,13 +61,8 @@ final class ApiGetSlice implements Slice {
             );
         }
         return new AsyncResponse(
-            this.sdk.info(matcher.group(1)).thenApply(
-                info -> {
-                    final JsonObjectBuilder json = Json.createObjectBuilder();
-                    info.print(new JsonMetaFormat(json));
-                    return json.build();
-                }
-            ).thenApply(json -> new RsJson(json))
+            this.sdk.info(matcher.group("name"))
+                .thenApply(MetaResponseFormat.byName(matcher.group("fmt")))
         );
     }
 }
