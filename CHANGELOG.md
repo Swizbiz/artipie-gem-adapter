@@ -1,3 +1,19 @@
+# v1.3
+
+ - 3ac042c feat: gem meta yaml format (#136)
+ - 466bb8b test: unit test for meta json format (#135)
+ - 0209bde fix: gem info output fields (#133)
+ - 41cdf2a feat: gem v1 dependencies API
+ - ceea0fc feat: gem v1 dependencies API
+ - be8de22 test: integration test for dependencies API (#131)
+ - a6751f4 refactoring(test): refactored gem integration test (#130)
+ - 998231c feat(deps): added dependency SDK (#129)
+ - c714e31 refactoring: refactored Gem SDK (#128)
+ - 7f2a8c5 feat(deps): added core classes for resolving deps (#127)
+ - 48f7bc1 refactoring: updated gem, http (#126)
+ - 5e50cc3 fix: api get slice route pattern (#121)
+ - adb502f feat(yaml): refactored gem info spec format (#123)
+
 # v1.2 version includes:
 
  - fix: add gem metadata instead of overwriting (#119)
