@@ -10,6 +10,7 @@ import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
 import com.artipie.asto.fs.FileStorage;
 import com.artipie.asto.misc.UncheckedIOFunc;
+import com.artipie.asto.misc.UncheckedSupplier;
 import com.artipie.gem.GemMeta.MetaInfo;
 import com.artipie.gem.ruby.RubyGemDependencies;
 import com.artipie.gem.ruby.RubyGemIndex;
