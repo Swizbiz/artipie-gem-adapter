@@ -17,12 +17,6 @@ import java.util.function.UnaryOperator;
  * New JSON format for Gem meta info.
  *
  * @since 1.0
- * @todo #122:30min Add tests for this class and ApiGetSlice.
- *  Check that this class produces valid YAMLs as for JsonMetaFormat.
- *  Also, check that ApiGetSlice returns valid response for `.yaml` suffix
- *  in response path. Test for `ApiGetSlice` could be quite primitive just to check
- *  that slice is working fine with yaml. On the other hand `YamlMetaFormatTest`
- *  must cover all methods of YamlMetaFormat (same as JsonMetaFormatTest).
  */
 public final class YamlMetaFormat implements MetaFormat {
 
@@ -53,10 +47,11 @@ public final class YamlMetaFormat implements MetaFormat {
 
     @Override
     public void print(final String name, final String[] values) {
-        final YamlSequenceBuilder seq = Yaml.createYamlSequenceBuilder();
+        YamlSequenceBuilder seqi = Yaml.createYamlSequenceBuilder();
         for (final String item : values) {
-            seq.add(item);
+            seqi = seqi.add(item);
         }
+        final YamlSequenceBuilder seq = seqi;
         this.yamler.accept(yaml -> yaml.add(name, seq.build()));
     }
 
