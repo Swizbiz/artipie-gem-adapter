@@ -35,7 +35,10 @@ public final class GemApiKeyAuth implements AuthScheme {
     }
 
     @Override
-    public CompletionStage<Result> authenticate(final Iterable<Map.Entry<String, String>> headers) {
+    public CompletionStage<Result> authenticate(
+        final Iterable<Map.Entry<String, String>> headers,
+        final String header
+    ) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
             .map(

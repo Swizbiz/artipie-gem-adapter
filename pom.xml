@@ -73,7 +73,7 @@ SOFTWARE.
     <dependency>
       <groupId>com.artipie</groupId>
       <artifactId>http</artifactId>
-      <version>v0.19</version>
+      <version>v0.26.1</version>
     </dependency>
     <!-- JRuby -->
     <dependency>

@@ -28,10 +28,6 @@ import org.reactivestreams.Publisher;
  * </p>
  *
  * @since 0.2
- * @todo #137:30min Add tests for ApiGetSlice.
- *  Check that ApiGetSlice returns valid response for `.yaml` suffix
- *  in response path. Test for `ApiGetSlice` could be quite primitive just to check
- *  that slice is working fine with yaml.
  */
 final class ApiGetSlice implements Slice {
 
