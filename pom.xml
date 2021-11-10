@@ -99,13 +99,13 @@ SOFTWARE.
     <dependency>
       <groupId>com.artipie</groupId>
       <artifactId>vertx-server</artifactId>
-      <version>0.3</version>
+      <version>0.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.15.2</version>
+      <version>1.16.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -238,7 +238,7 @@ SOFTWARE.
           <plugin>
             <groupId>com.qulice</groupId>
             <artifactId>qulice-maven-plugin</artifactId>
-            <version>0.18.19</version>
+            <version>0.19.4</version>
             <configuration>
               <excludes combine.children="append">
                 <exclude>findbugs:.*</exclude>

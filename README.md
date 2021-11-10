@@ -1,15 +1,10 @@
 <img src="https://www.artipie.com/logo.svg" width="64px" height="64px"/>
 
-[![EO principles respected here](https://www.elegantobjects.org/badge.svg)](https://www.elegantobjects.org)
-[![DevOps By Rultor.com](http://www.rultor.com/b/artipie/gem-adapter)](http://www.rultor.com/p/artipie/gem-adapter)
-[![We recommend IntelliJ IDEA](https://www.elegantobjects.org/intellij-idea.svg)](https://www.jetbrains.com/idea/)
+`gem-adapter` is a SDK for managing Gem repositories with low-level operations and HTTP endpoint for Gem repository.
 
-[![Build Status](https://img.shields.io/travis/artipie/gem-adapter/master.svg)](https://travis-ci.org/artipie/gem-adapter)
+[![Maven Build](https://github.com/artipie/gem-adapter/actions/workflows/maven.yml/badge.svg)](https://github.com/artipie/gem-adapter/actions/workflows/maven.yml)
 [![Javadoc](http://www.javadoc.io/badge/com.artipie/gem-adapter.svg)](http://www.javadoc.io/doc/com.artipie/gem-adapter)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/artipie/gem-adapter/blob/master/LICENSE.txt)
-[![Hits-of-Code](https://hitsofcode.com/github/artipie/gem-adapter)](https://hitsofcode.com/view/github/artipie/gem-adapter)
 [![Maven Central](https://img.shields.io/maven-central/v/com.artipie/gem-adapter.svg)](https://maven-badges.herokuapp.com/maven-central/com.artipie/gem-adapter)
-[![PDD status](http://www.0pdd.com/svg?name=artipie/gem-adapter)](http://www.0pdd.com/p?name=artipie/gem-adapter)
 
 `gem-adapter` is a slice in Artpie, aimed to support gem packages.
 
@@ -26,21 +21,42 @@ This is the dependency you need:
 Read the [Javadoc](http://www.javadoc.io/doc/com.artipie/gem-adapter)
 for more technical details.
 
-## Extra gems
+## Usage
 
-`lib/` dir contains additional ruby gems, required by the project.
-The directory is generated at maven clean phase.
+There are two public APIs for working with Gem repository:
+ - low-level `Gem` SDK
+ - high-level `GemSlice` HTTP endpoint
+
+### Gem SDK
+
+Create a new instance of `Gem` class with: `new Gem(storage)`,
+where `storage` is a [asto](https://github.com/artipie/asto) `Storage` implementation
+with Gem repository.
+
+To **update** repository with a new `gem` package use `gem.update(key)`, where `key` is a package key in storage.
+
+For retreiving package spec info use `gem.info(key)` method with, where `key` is a package key in storage.
+It returns future with `MetaInfo` interface, which can be printed to one of standard formats with `meta.print(fmt)`:
+ - `JsonMetaFormat` - for JSON meta spec format
+ - `YamlMetaFormat` - for YAML meta spec format
+
+To extract **dependencies** binary metadata of packages, use `gem.dependencies(names)` method, where
+`names` is a set of gem names (`Set<String>`); this method returns future with binary dependencies metadata
+merged for multiple packages.
+
+### HTTP endpoint
+
+To integrate Gem HTTP endpoint to server, use `GemSlice` class instance: `new GemSlice(storage)`, where
+`storage` is a repository storage for gem packages. This `Slice` implementation exposes standard Gem repository
+APIs and could be used by `gem` CLI.
 
 ## Useful links
 
 * [RubyGem Index Internals](https://blog.packagecloud.io/eng/2015/12/15/rubygem-index-internals/) - File structure and gem format
-
 * [Make Your Own Gem](https://guides.rubygems.org/make-your-own-gem/) - How to create and publish
 a simple ruby gem into rubygems.org registry.
-
 * [rubygems.org API](https://guides.rubygems.org/rubygems-org-api/) - A page with rubygems.org 
 API specification 
-
 * [Gugelines at rubygems.org](https://guides.rubygems.org/) - Guidelines around the `gem` package 
 manager.
 
