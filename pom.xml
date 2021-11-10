@@ -188,6 +188,24 @@ SOFTWARE.
         <filtering>false</filtering>
       </testResource>
     </testResources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <filesets>
+              <fileset>
+                <directory>${basedir}/lib</directory>
+                <includes>
+                  <include>**/*</include>
+                </includes>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>com.jcabi</groupId>
@@ -212,7 +230,7 @@ SOFTWARE.
             </goals>
             <configuration>
               <executable>bash</executable>
-              <commandlineArgs>ruby_lib.sh</commandlineArgs>
+              <commandlineArgs>./scripts/fetch-ruby-deps.sh</commandlineArgs>
             </configuration>
           </execution>
         </executions>
