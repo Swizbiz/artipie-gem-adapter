@@ -1,12 +1,20 @@
-<img src="https://www.artipie.com/logo.svg" width="64px" height="64px"/>
+<a href="http://artipie.com"><img src="https://www.artipie.com/logo.svg" width="64px" height="64px"/></a>
+
+[![Join our Telegramm group](https://img.shields.io/badge/Join%20us-Telegram-blue?&logo=telegram&?link=http://right&link=http://t.me/artipie)](http://t.me/artipie)
+
+[![EO principles respected here](https://www.elegantobjects.org/badge.svg)](https://www.elegantobjects.org)
+[![DevOps By Rultor.com](http://www.rultor.com/b/artipie/gem-adapter)](http://www.rultor.com/p/artipie/gem-adapter)
+[![We recommend IntelliJ IDEA](https://www.elegantobjects.org/intellij-idea.svg)](https://www.jetbrains.com/idea/)
+
+[![Javadoc](http://www.javadoc.io/badge/com.artipie/gem-adapter.svg)](http://www.javadoc.io/doc/com.artipie/gem-adapter)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/artipie/gem-adapter/blob/master/LICENSE.txt)
+[![codecov](https://codecov.io/gh/artipie/gem-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/artipie/gem-adapter)
+[![Hits-of-Code](https://hitsofcode.com/github/artipie/gem-adapter)](https://hitsofcode.com/view/github/artipie/gem-adapter)
+[![Maven Central](https://img.shields.io/maven-central/v/com.artipie/gem-adapter.svg)](https://maven-badges.herokuapp.com/maven-central/com.artipie/gem-adapter)
+[![PDD status](http://www.0pdd.com/svg?name=artipie/gem-adapter)](http://www.0pdd.com/p?name=artipie/gem-adapter)
+
 
 `gem-adapter` is a SDK for managing Gem repositories with low-level operations and HTTP endpoint for Gem repository.
-
-[![Maven Build](https://github.com/artipie/gem-adapter/actions/workflows/maven.yml/badge.svg)](https://github.com/artipie/gem-adapter/actions/workflows/maven.yml)
-[![Javadoc](http://www.javadoc.io/badge/com.artipie/gem-adapter.svg)](http://www.javadoc.io/doc/com.artipie/gem-adapter)
-[![Maven Central](https://img.shields.io/maven-central/v/com.artipie/gem-adapter.svg)](https://maven-badges.herokuapp.com/maven-central/com.artipie/gem-adapter)
-
-`gem-adapter` is a slice in Artpie, aimed to support gem packages.
 
 This is the dependency you need:
 
@@ -18,8 +26,13 @@ This is the dependency you need:
 </dependency>
 ```
 
+`gem-adapter` is a slice in Artipie, aimed to support gem packages.
 Read the [Javadoc](http://www.javadoc.io/doc/com.artipie/gem-adapter)
 for more technical details.
+
+If you have any question or suggestions, do not hesitate to [create an issue](https://github.com/artipie/gem-adapter/issues/new) or contact us in
+[Telegram](https://t.me/artipie).  
+Artipie [roadmap](https://github.com/orgs/artipie/projects/3).
 
 ## Usage
 
@@ -59,15 +72,10 @@ a simple ruby gem into rubygems.org registry.
 API specification 
 * [Gugelines at rubygems.org](https://guides.rubygems.org/) - Guidelines around the `gem` package 
 manager.
-
-## Similar solutions
-
-* [Artifactory RubyGems Repositories](https://www.jfrog.com/confluence/display/JFROG/RubyGems+Repositories)
-* [Gem in a Box](https://github.com/geminabox/geminabox)
-* [Gemfury](https://gemfury.com/l/gem-server)
-* `gem server` [command](https://guides.rubygems.org/run-your-own-gem-server/)   
  
 ## How to contribute
+
+Please read [contributing rules](https://github.com/artipie/artipie/blob/master/CONTRIBUTING.md).
 
 Fork repository, make changes, send us a pull request. We will review
 your changes and apply them to the `master` branch shortly, provided
