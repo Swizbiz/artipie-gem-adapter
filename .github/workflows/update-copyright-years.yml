@@ -2,7 +2,7 @@ name: Update copyright year
 
 on:
   schedule:
-    - cron: '0 1 22 * *' # Runs at 01:00 UTC on the 22nd of every month
+    - cron: '0 1 27 * *' # Runs at 01:00 UTC on the 27th of every month
 
 jobs:
   license:
@@ -13,7 +13,7 @@ jobs:
           fetch-depth: 0
       - uses: FantasticFiasco/action-update-license-year@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.LICENSE_SECRET }}
           path: | #add new path with glob pattern https://www.npmjs.com/package/glob
             **/LICENSE*
             src/**/*.java
